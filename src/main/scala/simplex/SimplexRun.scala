@@ -32,14 +32,8 @@ object SimplexRun {
     def pivot(tableau: Array[Array[Double]], pivotColInd: Int, pivotRowInd: Int): Array[Array[Double]] = {
         var tab = tableau
         val pivotValue = tab(pivotRowInd)(pivotColInd)
-        
-        printTableauRow(tab, pivotRowInd)
-        println(pivotRowInd)
-
-        tab(pivotRowInd) = tab(pivotRowInd).map(v => v / pivotValue ) 
-        
-        printTableauRow(tab, pivotRowInd)
-        
+        // printTableauRow(tab, pivotRowInd)
+        tab(pivotRowInd) = tab(pivotRowInd).map(v => v / pivotValue )         
         for(r <- 0 to tab.length - 1){
             if(r != pivotRowInd){
                 val subRow = tab(pivotRowInd).map(v => v * tab(r)(pivotColInd))
@@ -61,15 +55,13 @@ object SimplexRun {
         printTableau(tab)
         var stop = 0
         while(checkStoppage(tab) && stop < 500){
-
             c = findPivotColumnIndex(tab)
-            println("pivot col " + c)
-
             r = findPivotRowIndex(tab, c)
+
+            println("pivot col " + c)
             println("pivot row " + r)
-
+            
             tab = pivot(tab, c, r)
-
             printTableau(tab)
             stop = stop + 1
         }
