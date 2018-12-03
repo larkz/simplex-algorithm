@@ -9,9 +9,16 @@ object SimplexRun {
     
     def findPivotColumnIndex(tableau: Array[Array[Double]]): Int = {
         val lastRow = tableau.last
-        var colVariable = lastRow(0)
-        var colIndex = 0
-        lastRow.zipWithIndex.maxBy(_._1)._2
+        lastRow.zipWithIndex.minBy(_._1)._2
+    }
+
+    def getMinZero(a: Array[Double]): Int = {
+        var minInd = 0
+        var minVal = a(0)
+        for(i <- 1 to a.length - 1) {
+            if(a(i) > 0 && a(i) < minVal){minVal = a(i); minInd = i}
+        }
+        minInd
     }
 
     // Smallest ratio
@@ -19,47 +26,60 @@ object SimplexRun {
         val pivotCol = tableau.map(r => r(pivotColInd))
         val constraintCol = tableau.map(r => r.last)
         val ratios = constraintCol.zip(pivotCol).map { case (x, y) => x / y }
-        ratios.zipWithIndex.minBy(_._1)._2
+        getMinZero(ratios)
     }
 
     def pivot(tableau: Array[Array[Double]], pivotColInd: Int, pivotRowInd: Int): Array[Array[Double]] = {
         var tab = tableau
-        tab(pivotRowInd) = tab(pivotRowInd).map(v => v / tab(pivotRowInd)(pivotColInd) ) 
+        val pivotValue = tab(pivotRowInd)(pivotColInd)
+        
+        printTableauRow(tab, pivotRowInd)
+        println(pivotRowInd)
 
+        tab(pivotRowInd) = tab(pivotRowInd).map(v => v / pivotValue ) 
+        
+        printTableauRow(tab, pivotRowInd)
+        
         for(r <- 0 to tab.length - 1){
-            if (tab(r)(pivotColInd) > 0 ) {
+            if(r != pivotRowInd){
                 val subRow = tab(pivotRowInd).map(v => v * tab(r)(pivotColInd))
                 tab(r) = tab(r).zip(subRow).map { case (x, y) => x - y }
-            } else if (tab(r)(pivotColInd) < 0 ) {
-                val plusRow = tab(pivotRowInd).map(v => v * tab(r)(pivotColInd))
-                tab(r) = tab(r).zip(plusRow).map { case (x, y) => x + y }
-            }
+            }   
         }
+        
         tab
     }
 
     def checkStoppage(tableau: Array[Array[Double]]): Boolean = {
-        if(tableau.last.filter(_ >= 0).length >= tableau.last.length ) true else false
+        if(tableau.last.filter(_ < 0).length == 0 ) false else true
     }
     
-
     def solveSimplex(tableau: Array[Array[Double]]): Array[Array[Double]] = {
-        
         var tab = tableau
         var r = 0
         var c = 0
-        while(checkStoppage(tab)){
-            r = findPivotColumnIndex(tab)
-            println(r)
-            c = findPivotRowIndex(tab, r)
-            println(c)
-            tab = pivot(tab, r, c)
+        printTableau(tab)
+        var stop = 0
+        while(checkStoppage(tab) && stop < 500){
+
+            c = findPivotColumnIndex(tab)
+            println("pivot col " + c)
+
+            r = findPivotRowIndex(tab, c)
+            println("pivot row " + r)
+
+            tab = pivot(tab, c, r)
+
             printTableau(tab)
+            stop = stop + 1
         }
         tab
     }
 
     def printTableau(tableau: Array[Array[Double]]): Unit = {
-        print(tableau.map(_.mkString(", ")).mkString("\n") + "\n")
+        print(tableau.map(_.mkString(", ")).mkString("\n") + "\n\n")
+    }
+    def printTableauRow(tableau: Array[Array[Double]], r: Int): Unit = {
+        print(tableau(r).map(_.toString).mkString(", ") + "\n\n")
     }
 }
